@@ -1,0 +1,194 @@
+import math
+# ------------------------------------------
+# 1. CONFIGURABLE SALARY RULES
+# ------------------------------------------
+SALARY_RULES = {
+    "hra_rate": 0.20,                 # 20% of basic salary
+    "allowance_rate": 0.10,           # 10% of basic salary
+    "pf_rate": 0.12,                  # 12% of basic salary
+    "professional_tax": 200,          # Fixed monthly deduction
+    "standard_deduction_annual": 50000,
+    "cess_rate": 0.04,                # 4% of income tax
+    # Illustrative annual tax slabs
+    "tax_slabs": [
+        {"limit": 300000, "rate": 0.00},
+        {"limit": 600000, "rate": 0.05},
+        {"limit": 900000, "rate": 0.10},
+        {"limit": 1200000, "rate": 0.15},
+        {"limit": None, "rate": 0.20}
+    ]
+}
+# ------------------------------------------
+# 2. SAMPLE EMPLOYEE RECORDS
+# ------------------------------------------
+employees = [
+    {"id": 101, "name": "Rahul", "basic_salary": 30000},
+    {"id": 102, "name": "Priya", "basic_salary": 45000},
+    {"id": 103, "name": "Arun", "basic_salary": 60000}
+]
+# ------------------------------------------
+# 3. INPUT VALIDATION
+# ------------------------------------------
+def get_valid_salary(message):
+    while True:
+        try:
+            salary = float(input(message))
+
+            if not math.isfinite(salary) or salary <= 0:
+                print("Please enter a valid positive salary.")
+            else:
+                return salary
+
+        except ValueError:
+            print("Invalid input! Please enter a number.")
+# ------------------------------------------
+# 4. CALCULATE ANNUAL INCOME TAX
+# ------------------------------------------
+def calculate_annual_tax(taxable_income, rules):
+    tax = 0
+    previous_limit = 0
+
+    for slab in rules["tax_slabs"]:
+        limit = slab["limit"]
+        rate = slab["rate"]
+
+        if limit is None:
+            taxable_amount = max(0, taxable_income - previous_limit)
+        else:
+            taxable_amount = max(
+                0, min(taxable_income, limit) - previous_limit
+            )
+
+        tax += taxable_amount * rate
+
+        if limit is None or taxable_income <= limit:
+            break
+
+        previous_limit = limit
+
+    return tax
+# ------------------------------------------
+# 5. SALARY CALCULATION FUNCTION
+# ------------------------------------------
+def calculate_salary(employee, rules):
+
+    basic = employee["basic_salary"]
+
+    # Calculate allowances
+    hra = basic * rules["hra_rate"]
+    allowance = basic * rules["allowance_rate"]
+
+    # Calculate gross salary
+    gross_salary = basic + hra + allowance
+
+    # Calculate deductions
+    pf = basic * rules["pf_rate"]
+    professional_tax = rules["professional_tax"]
+
+    # Calculate annual taxable income
+    annual_gross = gross_salary * 12
+    annual_pf = pf * 12
+
+    taxable_income = max(
+        0,
+        annual_gross
+        - annual_pf
+        - rules["standard_deduction_annual"]
+    )
+    # Calculate annual income tax and monthly tax
+    annual_tax = calculate_annual_tax(taxable_income, rules)
+
+    monthly_income_tax = (
+        annual_tax * (1 + rules["cess_rate"]) / 12
+    )
+    # Calculate total deductions
+    total_deductions = (
+        pf + professional_tax + monthly_income_tax
+    )
+    # Calculate net salary
+    net_salary = gross_salary - total_deductions
+    # Return complete salary breakdown
+    return {
+        "employee_name": employee["name"],
+        "employee_id": employee["id"],
+        "basic_salary": basic,
+        "hra": hra,
+        "allowance": allowance,
+        "gross_salary": gross_salary,
+        "pf": pf,
+        "professional_tax": professional_tax,
+        "income_tax": monthly_income_tax,
+        "total_deductions": total_deductions,
+        "net_salary": net_salary
+    }
+# ------------------------------------------
+# 6. DISPLAY SALARY BREAKDOWN
+# ------------------------------------------
+def display_salary(result):
+    print("\n" + "=" * 45)
+    print("          EMPLOYEE SALARY SLIP")
+    print("=" * 45)
+    print("Employee Name :", result["employee_name"])
+    print("Employee ID   :", result["employee_id"])
+    print("-" * 45)
+    print("SALARY DETAILS")
+    print("-" * 45)
+    print(f"Basic Salary       : Rs. {result['basic_salary']:,.2f}")
+    print(f"HRA                : Rs. {result['hra']:,.2f}")
+    print(f"Other Allowance    : Rs. {result['allowance']:,.2f}")
+    print("-" * 45)
+    print(f"Gross Salary       : Rs. {result['gross_salary']:,.2f}")
+    print("-" * 45)
+    print("DEDUCTIONS")
+    print("-" * 45)
+    print(f"Provident Fund     : Rs. {result['pf']:,.2f}")
+    print(f"Professional Tax   : Rs. {result['professional_tax']:,.2f}")
+    print(f"Income Tax         : Rs. {result['income_tax']:,.2f}")
+    print("-" * 45)
+    print(f"Total Deductions   : Rs. {result['total_deductions']:,.2f}")
+    print("=" * 45)
+    print(f"NET SALARY         : Rs. {result['net_salary']:,.2f}")
+    print("=" * 45)
+# ------------------------------------------
+# 7. MAIN PROGRAM
+# ------------------------------------------
+def main():
+    print("\nWELCOME TO EMPLOYEE SALARY CALCULATOR")
+    while True:
+        print("\n1. View Sample Employee Salaries")
+        print("2. Calculate New Employee Salary")
+        print("3. Exit")
+        choice = input("Enter your choice: ").strip()
+        if choice == "1":
+            for employee in employees:
+                result = calculate_salary(employee, SALARY_RULES)
+                display_salary(result)
+        elif choice == "2":
+            name = input("Enter employee name: ").strip()
+            if not name:
+                print("Employee name cannot be empty.")
+                continue
+            employee_id = input("Enter employee ID: ").strip()
+            if not employee_id:
+                print("Employee ID cannot be empty.")
+                continue
+            basic_salary = get_valid_salary(
+                "Enter monthly basic salary: "
+            )
+            employee = {
+                "id": employee_id,
+                "name": name,
+                "basic_salary": basic_salary
+            }
+            result = calculate_salary(employee, SALARY_RULES)
+            display_salary(result)
+        elif choice == "3":
+            print("Thank you for using Salary Calculator!")
+            break
+        else:
+            print("Invalid choice! Please select 1, 2 or 3.")
+# ------------------------------------------
+# 8. PROGRAM EXECUTION
+# ------------------------------------------
+if __name__ == "__main__":
+    main()
