@@ -38,9 +38,8 @@ Step 4: Run the program:bash
 python salary_calculator.py
 Step 5: Select an option from the menu.
 ## Sample Employee Records
-Employee ID	Name	Basic Salary
-101       Rahul 	₹30,000
-102	      Priya 	₹45,000
+101       Rahul 	₹30,000;
+102	      Priya 	₹45,000;
 103	      Arun	  ₹60,000
 ## Result
 The Employee Salary Calculator demonstrates how Python can be used to automate salary calculations. It provides a simple and reusable solution for calculating employee gross salary, deductions, and net salary.
